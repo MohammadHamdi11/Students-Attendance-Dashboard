@@ -1,0 +1,47 @@
+name: Sync Attendance Reports
+
+on:
+  schedule:
+    # Runs every hour at minute 0
+    - cron: '0 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+jobs:
+  sync-directory:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout source repo (public)
+      uses: actions/checkout@v4
+      with:
+        repository: MohammadHamdi11/RN-E-attendancerecorderapp
+        path: source-repo
+    
+    - name: Checkout destination repo
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        path: dest-repo
+    
+    - name: Copy attendance_reports directory
+      run: |
+        # Remove old directory if exists
+        rm -rf dest-repo/attendance_reports
+        
+        # Copy the directory from source to destination
+        cp -r source-repo/attendance_reports dest-repo/attendance_reports
+    
+    - name: Commit and push changes
+      run: |
+        cd dest-repo
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git add attendance_reports
+        
+        # Only commit if there are changes
+        if git diff --staged --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "Sync attendance_reports from main repo [automated]"
+          git push
+        fi

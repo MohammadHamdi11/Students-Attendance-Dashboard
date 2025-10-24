@@ -25,20 +25,24 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         path: dest-repo
     
-    - name: Copy attendance_reports directory
+    - name: Copy directories
       run: |
-        # Remove old directory if exists
+        # Remove old directories if they exist
         rm -rf dest-repo/attendance_reports
+        rm -rf dest-repo/modules_schedules
+        rm -rf dest-repo/assets
         
-        # Copy the directory from source to destination
+        # Copy the directories from source to destination
         cp -r source-repo/attendance_reports dest-repo/attendance_reports
+        cp -r source-repo/modules_schedules dest-repo/modules_schedules
+        cp -r source-repo/assets dest-repo/assets
     
     - name: Commit and push changes
       run: |
         cd dest-repo
         git config --local user.email "action@github.com"
         git config --local user.name "Attendance Bot"
-        git add attendance_reports
+        git add attendance_reports modules_schedules assets
         
         # Only commit if there are changes
         if git diff --staged --quiet; then
@@ -46,7 +50,7 @@ jobs:
           exit 0
         fi
         
-        git commit -m "Sync attendance_reports from main repo - $(date '+%Y-%m-%d %H:%M:%S')"
+        git commit -m "Sync attendance_reports, modules_schedules, and assets from main repo - $(date '+%Y-%m-%d %H:%M:%S')"
         
         # Retry logic with exponential backoff
         max_attempts=5

@@ -9,6 +9,8 @@ on:
 jobs:
   sync-directory:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required for pushing changes
     
     steps:
     - name: Checkout source repo (public)
@@ -34,14 +36,39 @@ jobs:
     - name: Commit and push changes
       run: |
         cd dest-repo
-        git config user.name "github-actions[bot]"
-        git config user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.email "action@github.com"
+        git config --local user.name "Attendance Bot"
         git add attendance_reports
         
         # Only commit if there are changes
         if git diff --staged --quiet; then
           echo "No changes to commit"
-        else
-          git commit -m "Sync attendance_reports from main repo [automated]"
-          git push
+          exit 0
         fi
+        
+        git commit -m "Sync attendance_reports from main repo - $(date '+%Y-%m-%d %H:%M:%S')"
+        
+        # Retry logic with exponential backoff
+        max_attempts=5
+        attempt=1
+        while [ $attempt -le $max_attempts ]; do
+          echo "Push attempt $attempt of $max_attempts"
+          
+          if git push; then
+            echo "Push successful"
+            exit 0
+          fi
+          
+          echo "Push failed, pulling and retrying..."
+          git pull --rebase origin main
+          
+          if [ $attempt -eq $max_attempts ]; then
+            echo "Max attempts reached, failing"
+            exit 1
+          fi
+          
+          sleep $((2 ** attempt))  # Exponential backoff: 2s, 4s, 8s, 16s
+          attempt=$((attempt + 1))
+        done
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

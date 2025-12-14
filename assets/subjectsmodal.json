@@ -8,7 +8,8 @@
   "Parasitology SGD/POS",
   "Pathology Lab/Museum",
   "Pharmacology",
-  "Forensics/Toxicology",
+  "Forensics/Toxicology POS",
+  "Forensics/Toxicology Skill Lab",
   "Community Medicine",
   "ENT",
   "Family Medicine",
@@ -32,8 +33,10 @@
   "Physical Medicine",
   "General Surgery",
   "Special Surgery",
+  "Surgery Seminar/Slide",
+  "Surgery Lecture",
+  "Surgery Pop Quiz",
   "Ophthalmology",
   "Emergency",
   "Obstetrics/Gynaecology",
-  "pop quiz surgery 2"
 ]
